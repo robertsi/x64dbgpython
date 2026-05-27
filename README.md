@@ -38,8 +38,10 @@ PythonHome=C:\Users\robert\AppData\Local\Python\pythoncore-3.14-32
 ### Build
 
 ```powershell
+# get cmkr
 iwr "https://raw.githubusercontent.com/build-cpp/cmkr/main/cmake/cmkr.cmake" -OutFile "cmake/cmkr.cmake"
-cmake -P cmake/cmkr.cmake #Generates CMakeLists.txt from cmake.toml
+# Generate CMakeLists.txt from cmake.toml
+cmake -P cmake/cmkr.cmake 
 cmake -B Release/x86 -A Win32
 cmake --build Release/x86 --config Release
 
