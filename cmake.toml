@@ -3,7 +3,7 @@ version = "3.15"
 cmkr-include = "cmake/cmkr.cmake"
 
 [project]
-name = "PluginTemplate"
+name = "x64dbgpython-plugin"
 include-before = [
 	"cmake/msvc-static-runtime.cmake",
 	"cmake/msvc-configurations.cmake",
