@@ -1,5 +1,6 @@
 #include "plugin.h"
 
+
 // Examples: https://github.com/x64dbg/x64dbg/wiki/Plugins
 // References:
 // - https://help.x64dbg.com/en/latest/developers/plugins/index.html
@@ -7,58 +8,124 @@
 // - https://x64dbg.com/blog/2016/10/20/threading-model.html
 // - https://x64dbg.com/blog/2016/07/30/x64dbg-plugin-sdk.html
 
-// Command use the same signature as main in C
-// argv[0] contains the full command, after that are the arguments
-// NOTE: arguments are separated by a COMMA (not space like WinDbg)
-static bool cbExampleCommand(int argc, char** argv)
+static std::wstring makeX64dbgPackageDir(const std::wstring& directory)
 {
-    if (argc < 3)
-    {
-        dputs("Usage: " PLUGIN_NAME "expr1, expr2");
+    auto dir = directory;
+    if (dir[dir.length() - 1] != L'\\')
+        dir.push_back(L'\\');
+    dir.append(L"Lib\\site-packages");
+    return dir;
+}
 
-        // Return false to indicate failure (used for scripting)
+static bool isValidPythonHome(const wchar_t* directory)
+{
+    if (!directory || !*directory)
         return false;
+    auto attr = GetFileAttributesW(makeX64dbgPackageDir(directory).c_str());
+    if (attr == INVALID_FILE_ATTRIBUTES)
+        return false;
+    return (attr & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY;
+}
+
+static std::wstring Utf8ToUtf16(const std::string& str)
+{
+    if (str.empty())
+        return L"";
+
+    int size_needed = MultiByteToWideChar(
+        CP_UTF8, 0,
+        str.data(), (int)str.size(),
+        nullptr, 0
+    );
+
+    std::wstring result(size_needed, 0);
+
+    MultiByteToWideChar(
+        CP_UTF8, 0,
+        str.data(), (int)str.size(),
+        &result[0], size_needed
+    );
+
+    return result;
+}
+
+std::string Utf16ToUtf8(const std::wstring& wstr)
+{
+    if (wstr.empty()) return {};
+
+    int size_needed = WideCharToMultiByte(
+        CP_UTF8, 0,
+        wstr.c_str(), (int)wstr.size(),
+        nullptr, 0, nullptr, nullptr
+    );
+
+    std::string result(size_needed, 0);
+
+    WideCharToMultiByte(
+        CP_UTF8, 0,
+        wstr.c_str(), (int)wstr.size(),
+        &result[0], size_needed,
+        nullptr, nullptr
+    );
+
+    return result;
+}
+
+static bool findX64dbgPythonHome(std::wstring& pythonHome)
+{
+    // Get from configuration
+    std::array<char, MAX_SETTING_SIZE> setting{};
+
+    if (BridgeSettingGet("x64dbgpython", "PythonHome", setting.data()))
+    {
+        pythonHome = Utf8ToUtf16(setting.data());
+
+        if (isValidPythonHome(pythonHome.c_str()))
+        {
+            dprintf("Found valid PythonHome in x64dbg.ini file!\n");
+            dprintf("PythonHome=%s\n", setting.data());
+            return true;
+        }
+
+        dprintf(
+            "Found invalid PythonHome setting \"%s\"... in x64dbg.ini file!\n",
+            setting.data()
+        );
     }
 
-    // Helper function for parsing expressions
-    // Reference: https://help.x64dbg.com/en/latest/introduction/Expressions.html
-    auto parseExpr = [](const char* expression, duint& value)
-    {
-        bool success = false;
-        value = DbgEval(expression, &success);
-        if (!success)
-            dprintf("Invalid expression '%s'\n", expression);
-        return success;
-    };
-
-    duint a = 0;
-    if (!parseExpr(argv[1], a))
-        return false;
-
-    duint b = 0;
-    if (!parseExpr(argv[2], b))
-        return false;
-
-    // NOTE: Look at x64dbg-sdk/pluginsdk/bridgemain.h for a list of available functions.
-    // The Script:: namespace and DbgFunctions()->... are also good to check out.
-
-    // Do something meaningful with the arguments
-    duint result = a + b;
-    dprintf("$result = 0x%p + 0x%p = 0x%p\n", a, b, result);
-
-    // The $result variable can be used for scripts
-    DbgValSetScalar("$result", result);
-
-    return true;
+    return false;
 }
+
+
+
 
 // Initialize your plugin data here.
 bool pluginInit(PLUG_INITSTRUCT* initStruct)
 {
-    dprintf("pluginInit(pluginHandle: %d)\n", pluginHandle);
+    //dprintf("pluginInit(pluginHandle: %d)\n", pluginHandle);
+
+        
+    std::wstring pythonHome;
+    if(!findX64dbgPythonHome(pythonHome))
+    {        
+        BridgeSettingSet("x64dbgpython", "PythonHome", "Set PythonHome in x64dbg.ini");       
+        return false;
+    }
+
+
+	std::string pythonHomeUtf8 = Utf16ToUtf8(pythonHome);
+
+    if(AddDllDirectory(pythonHome.c_str()) != 0)
+    {
+        dprintf("PythonHome=%s added to x64dbg binary directories\n", pythonHomeUtf8.c_str());
+    }
+    else
+    {
+        dprintf("Failed to add PythonHome=%s to x64dbg binary directories\n", pythonHomeUtf8.c_str());
+    }
 
     // Prefix of the functions to call here: _plugin_register
-    _plugin_registercommand(pluginHandle, PLUGIN_NAME, cbExampleCommand, true);
+    //_plugin_registercommand(pluginHandle, PLUGIN_NAME, cbExampleCommand, true);
 
     // Return false to cancel loading the plugin.
     return true;
@@ -72,7 +139,7 @@ void pluginStop()
 {
     // Prefix of the functions to call here: _plugin_unregister
 
-    dprintf("pluginStop(pluginHandle: %d)\n", pluginHandle);
+    //dprintf("pluginStop(pluginHandle: %d)\n", pluginHandle);
 }
 
 // Do GUI/Menu related things here.
@@ -82,5 +149,5 @@ void pluginSetup()
 {
     // Prefix of the functions to call here: _plugin_menu
 
-    dprintf("pluginSetup(pluginHandle: %d)\n", pluginHandle);
+    //dprintf("pluginSetup(pluginHandle: %d)\n", pluginHandle);
 }
