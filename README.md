@@ -28,7 +28,7 @@ Please consider donating to [x64dbg](https://github.com/x64dbg/x64dbg)
 
 This is just a necessary helper plugin that reads PythonHome from x32dbg.ini and x64dbg.ini and puts the python folder on the x64dbg bin path. It runs before x64dbgpython plugin so that python.dll/folder is available. No need to use PATH plugin anymore and pollute System/User path environemnt variable anymore.
 
-Example enetry in x32dbg.ini
+Example entry in x32dbg.ini
 
 ```ini
 [x64dbgpython]
