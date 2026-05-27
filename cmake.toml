@@ -1,0 +1,32 @@
+[cmake]
+version = "3.15"
+cmkr-include = "cmake/cmkr.cmake"
+
+[project]
+name = "PluginTemplate"
+include-before = [
+	"cmake/msvc-static-runtime.cmake",
+	"cmake/msvc-configurations.cmake",
+]
+
+[fetch-content.x64dbg]
+url = "https://sourceforge.net/projects/x64dbg/files/snapshots/snapshot_2026-04-20_19-04.zip/download"
+sha1 = "8d14fe92601625c431c3a8d3773e2f90da540603"
+include-after = ["cmake/x64dbg.cmake"]
+
+#https://sourceforge.net/projects/x64dbg.mirror/files/2026.04.20/
+#[fetch-content.x64dbg]
+#git = "https://github.com/x64dbg/x64dbg"
+#tag = "2026.05.27"
+#include-after = ["cmake/x64dbg.cmake"]
+
+[template.plugin]
+type = "shared"
+add-function = "x64dbg_plugin"
+
+[target.PluginTemplate]
+type = "plugin"
+sources = [
+    "src/!x64dbgpython/*.cpp",
+    "src/!x64dbgpython/*.h",
+]

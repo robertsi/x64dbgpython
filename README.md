@@ -22,3 +22,14 @@ x64dbg python made some wrapper for easy to use in python language. If you're go
 # Donation
 
 Please consider donating to [x64dbg](https://github.com/x64dbg/x64dbg)
+
+## Build
+
+### Python-Path companion plugin
+
+```powershell
+iwr "https://raw.githubusercontent.com/build-cpp/cmkr/main/cmake/cmkr.cmake" -OutFile "cmake/cmkr.cmake"
+cmake -P cmake/cmkr.cmake #Generates CMakeLists.txt from cmake.toml
+cmake -B Release/x86 -A Win32
+cmake --build Release/x86 --config Release
+```
