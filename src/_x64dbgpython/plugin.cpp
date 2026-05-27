@@ -47,7 +47,7 @@ static bool cbExampleCommand(int argc, char** argv)
     dprintf("$result = 0x%p + 0x%p = 0x%p\n", a, b, result);
 
     // The $result variable can be used for scripts
-    DbgValToString("$result", result);
+    DbgValSetScalar("$result", result);
 
     return true;
 }

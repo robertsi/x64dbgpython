@@ -42,24 +42,22 @@ endif()
 message(STATUS "Fetching x64dbg...")
 FetchContent_Declare(x64dbg
 	URL
-		"https://sourceforge.net/projects/x64dbg/files/snapshots/snapshot_2023-06-10_18-05.zip"
+		"https://sourceforge.net/projects/x64dbg.mirror/files/2026.04.20/x64dbg-pluginsdk-cmake.zip/download"
 	URL_HASH
-		SHA1=04468bd61fb36d6b10d17f342f03ef12f5b2ce62
+		SHA1=458c0ecbed1db7a92942f9a8c9fd54a932201dbe
 )
 FetchContent_MakeAvailable(x64dbg)
 
-include("cmake/x64dbg.cmake")
-
-# Target: PluginTemplate
-set(PluginTemplate_SOURCES
+# Target: _x64dbgpython
+set(_x64dbgpython_SOURCES
 	cmake.toml
-	"src/!x64dbgpython/plugin.cpp"
-	"src/!x64dbgpython/plugin.h"
-	"src/!x64dbgpython/pluginmain.cpp"
-	"src/!x64dbgpython/pluginmain.h"
+	"src/_x64dbgpython/plugin.cpp"
+	"src/_x64dbgpython/plugin.h"
+	"src/_x64dbgpython/pluginmain.cpp"
+	"src/_x64dbgpython/pluginmain.h"
 )
 
-x64dbg_plugin(PluginTemplate)
+x64dbg_plugin(_x64dbgpython)
 
-target_sources(PluginTemplate PRIVATE ${PluginTemplate_SOURCES})
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${PluginTemplate_SOURCES})
+target_sources(_x64dbgpython PRIVATE ${_x64dbgpython_SOURCES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${_x64dbgpython_SOURCES})
